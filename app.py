@@ -32,8 +32,8 @@ def webhook():
         end_date = date_period.get("endDate")
         formatted_start_date = format_iso_to_ddmmyyyy(start_date)
         formatted_end_date = format_iso_to_ddmmyyyy(end_date)
-        # TODO: fetch weather forecast for the specified date
-        response_text = f"You're visiting {city} between {formatted_start_date} to {formatted_end_date}. It may be chilly, so take a jacket!"
+        forecast = get_forecast_for_date_range(city=city, start_date=start_date, end_date=end_date)
+        response_text = f"You're visiting {city} between {formatted_start_date} to {formatted_end_date}. {forecast}"
     else:
         response_text = "Sorry, I didn't understand that."
 
@@ -42,6 +42,40 @@ def webhook():
 def format_iso_to_ddmmyyyy(iso_string):
     dt = datetime.fromisoformat(iso_string)
     return dt.strftime('%d/%m/%Y')
+
+import requests
+from datetime import datetime
+
+def get_forecast_for_date_range(city, start_date, end_date):
+    url = f"http://api.openweathermap.org/data/2.5/forecast"
+    params = {
+        "q": city,
+        "appid": OPENWEATHER_API_KEY,
+        "units": "metric"
+    }
+
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        data = response.json()
+
+        forecasts = []
+        for entry in data.get("list", []):
+            timestamp = entry["dt_txt"]
+            date_str = timestamp.split(" ")[0]
+
+            if start_date <= date_str <= end_date:
+                forecasts.append({
+                    "datetime": timestamp,
+                    "temp": entry["main"]["temp"],
+                    "description": entry["weather"][0]["description"].capitalize()
+                })
+
+        return forecasts
+
+    except Exception as e:
+        print("Error fetching forecast:", e)
+        return []
 
 def get_weather_for_city(city):
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}&units=metric"
