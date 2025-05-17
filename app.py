@@ -36,6 +36,18 @@ def get_weather_for_city(city):
 
         temp = data["main"]["temp"]
         description = data["weather"][0]["description"].capitalize()
-        return f"The weather in {city} is {description}, {temp}°C."
-    except Exception as e:
+
+        # 🧥 Clothing recommendation logic
+        if temp < 10:
+            clothing = "It's quite cold — wear a warm coat and scarf 🧥🧣"
+        elif temp < 18:
+            clothing = "You might want to wear a jacket 🧥"
+        elif temp < 25:
+            clothing = "A t-shirt and jeans should be fine 👕👖"
+        else:
+            clothing = "It's hot! Wear something light 🩳👒"
+
+        return f"The weather in {city} is {description}, {temp}°C. {clothing}"
+    except Exception:
         return None
+
