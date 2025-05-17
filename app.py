@@ -23,6 +23,11 @@ def webhook():
     if intent == "GetWeather" and city:
         weather = get_weather_for_city(city)
         response_text = weather or f"Sorry, I couldn’t get the weather for {city}."
+    elif intent == "GetTripAdvice":
+        city = parameters.get("city")
+        date = parameters.get("date")
+        # TODO: fetch weather forecast for the specified date
+        response_text = f"You're visiting {city} on {date}. It may be chilly, so take a jacket!"
     else:
         response_text = "Sorry, I didn't understand that."
 
