@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Flask, request, jsonify
 import requests
 import os
@@ -25,13 +27,21 @@ def webhook():
         response_text = weather or f"Sorry, I couldn’t get the weather for {city}."
     elif intent == "GetTripAdvice":
         city = parameters.get("city")
-        date = parameters.get("date")
+        date_period = parameters.get("date")
+        start_date = date_period.get("startDate")
+        end_date = date_period.get("endDate")
+        formatted_start_date = format_iso_to_ddmmyyyy(start_date)
+        formatted_end_date = format_iso_to_ddmmyyyy(end_date)
         # TODO: fetch weather forecast for the specified date
-        response_text = f"You're visiting {city} on {date}. It may be chilly, so take a jacket!"
+        response_text = f"You're visiting {city} between {formatted_start_date} to {formatted_end_date}. It may be chilly, so take a jacket!"
     else:
         response_text = "Sorry, I didn't understand that."
 
     return jsonify({"fulfillmentText": response_text})
+
+def format_iso_to_ddmmyyyy(iso_string):
+    dt = datetime.fromisoformat(iso_string)
+    return dt.strftime('%d/%m/%Y')
 
 def get_weather_for_city(city):
     url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={OPENWEATHER_API_KEY}&units=metric"
