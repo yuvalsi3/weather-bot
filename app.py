@@ -51,3 +51,5 @@ def get_weather_for_city(city):
     except Exception:
         return None
 
+if __name__ == '__main__':
+    app.run(port=5000)
