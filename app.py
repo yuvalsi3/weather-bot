@@ -50,7 +50,8 @@ def get_weather_for_city(city):
             clothing = "It's hot! Wear something light 🩳👒"
 
         return f"The weather in {city} is {description}, {temp}°C. {clothing}"
-    except Exception:
+    except Exception as e:
+        print(str(e))
         return None
 
 
