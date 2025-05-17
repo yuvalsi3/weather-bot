@@ -46,6 +46,48 @@ def format_iso_to_ddmmyyyy(iso_string):
 import requests
 from datetime import datetime
 
+def summarize_temperature_trend(forecast_list, city, start_date, end_date):
+    if not forecast_list:
+        return f"Sorry, no forecast data available for {city} between {start_date} and {end_date}."
+
+    temps = [entry['temp'] for entry in forecast_list]
+    descriptions = [entry['description'] for entry in forecast_list]
+
+    avg_temp = sum(temps) / len(temps)
+    min_temp = min(temps)
+    max_temp = max(temps)
+
+    # Determine trend (simple version)
+    trend = "stable"
+    if temps[-1] > temps[0] + 2:
+        trend = "warming"
+    elif temps[-1] < temps[0] - 2:
+        trend = "cooling"
+
+    # Most common description
+    from collections import Counter
+    common_desc = Counter(descriptions).most_common(1)[0][0]
+
+    # Clothing advice
+    if avg_temp < 10:
+        clothes = "Pack warm clothes, including a coat and scarf 🧣🧥"
+    elif avg_temp < 18:
+        clothes = "You might want to take a jacket 🧥"
+    elif avg_temp < 25:
+        clothes = "T-shirts and jeans should be fine 👕👖"
+    else:
+        clothes = "It's hot — pack light clothes and stay hydrated 🩳👒"
+
+    return (
+        f"Here's the forecast for {city} from {start_date} to {end_date}:\n"
+        f"- Average temperature: {avg_temp:.1f}°C\n"
+        f"- Min: {min_temp:.1f}°C, Max: {max_temp:.1f}°C\n"
+        f"- Most common condition: {common_desc}\n"
+        f"- Temperature trend: {trend}\n"
+        f"{clothes}"
+    )
+
+
 def get_forecast_for_date_range(city, start_date, end_date):
     url = f"http://api.openweathermap.org/data/2.5/forecast"
     params = {
@@ -70,9 +112,7 @@ def get_forecast_for_date_range(city, start_date, end_date):
                     "temp": entry["main"]["temp"],
                     "description": entry["weather"][0]["description"].capitalize()
                 })
-
-        return forecasts
-
+        return summarize_temperature_trend(forecast_list=forecasts, city=city, start_date=start_date, end_date=end_date)
     except Exception as e:
         print("Error fetching forecast:", e)
         return []
